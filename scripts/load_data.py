@@ -6,7 +6,7 @@ import pandas as pd
 from pathlib import Path
 import json
 
-DATA_PATH = Path("..data/superstore.csv")
+DATA_PATH = Path(__file__).resolve().parents[1] / "data" / "superstore.csv"
 OUT_PATH = Path("../outputs")
 OUT_PATH.mkdir(parents=True, exist_ok=True)
 
