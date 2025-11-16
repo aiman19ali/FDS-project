@@ -21,6 +21,16 @@ report = {}
 report["n_rows"] = len(clean)
 report["columns"] = clean.columns.tolist()
 
+# Load KPI metrics if available
+basic_kpi_path = OUT / "basic_kpis.json"
+top_products_path = OUT / "top_products_by_sales.csv"
+if basic_kpi_path.exists():
+    with open(basic_kpi_path, "r", encoding="utf-8") as handle:
+        report["basic_metrics"] = json.load(handle)
+if top_products_path.exists():
+    top_products_df = pd.read_csv(top_products_path)
+    report["top_products_by_sales"] = top_products_df.to_dict(orient="records")
+
 # Classification results summary (if model saved)
 cls_models = list(MR.glob("best_classification_model_*.joblib"))
 if cls_models:
@@ -91,6 +101,16 @@ with open(MR / "summary_report.txt", "w", encoding="utf-8") as f:
     f.write("Columns:\n")
     for c in report.get("columns", []):
         f.write(f" - {c}\n")
+    basic_metrics = report.get("basic_metrics")
+    if basic_metrics:
+        f.write("\nKey metrics:\n")
+        for key, value in basic_metrics.items():
+            f.write(f" - {key}: {value}\n")
+    top_products = report.get("top_products_by_sales")
+    if top_products:
+        f.write("\nTop products by sales:\n")
+        for product in top_products:
+            f.write(f" - {product.get('product_name')}: {product.get('total_sales')}\n")
     f.write("\nCluster counts (if available):\n")
     for k, v in report.get("cluster_counts", {}).items():
         f.write(f"Cluster {k}: {v} rows\n")
