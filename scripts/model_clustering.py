@@ -16,7 +16,6 @@ MR.mkdir(parents=True, exist_ok=True)
 df = pd.read_csv(OUT / "cleaned_data.csv", low_memory=False)
 df.columns = [c.strip().lower().replace(" ", "_").replace(".", "_") for c in df.columns]
 
-# Choose numeric features for clustering
 features = []
 for f in ["sales","profit","profit_margin","quantity","discount","shipping_cost"]:
     if f in df.columns:
@@ -28,7 +27,6 @@ X = df[features].fillna(0).values
 scaler = StandardScaler()
 Xs = scaler.fit_transform(X)
 
-# Determine K using silhouette for k=2..8
 best_k = 2
 best_score = -1
 scores = {}
@@ -47,7 +45,7 @@ print(f"Best k by silhouette: {best_k} (score {best_score:.4f})")
 kmeans = KMeans(n_clusters=best_k, random_state=42, n_init=10).fit(Xs)
 labels = kmeans.labels_
 
-# Save clustered dataframe
+
 df["cluster"] = labels
 df.to_csv(OUT / "clustered_data.csv", index=False)
 joblib.dump({"scaler": scaler, "kmeans": kmeans, "features": features}, MR / "kmeans_artifact.joblib")

@@ -13,7 +13,7 @@ OUT = Path("../outputs")
 MR = OUT / "model_results"
 MR.mkdir(parents=True, exist_ok=True)
 
-# Load cleaned and clustered data if present
+
 clean = pd.read_csv(OUT / "cleaned_data.csv", low_memory=False)
 clean.columns = [c.strip().lower().replace(" ", "_").replace(".", "_") for c in clean.columns]
 
@@ -21,7 +21,7 @@ report = {}
 report["n_rows"] = len(clean)
 report["columns"] = clean.columns.tolist()
 
-# Load KPI metrics if available
+
 basic_kpi_path = OUT / "basic_kpis.json"
 top_products_path = OUT / "top_products_by_sales.csv"
 if basic_kpi_path.exists():
@@ -31,7 +31,7 @@ if top_products_path.exists():
     top_products_df = pd.read_csv(top_products_path)
     report["top_products_by_sales"] = top_products_df.to_dict(orient="records")
 
-# Classification results summary (if model saved)
+
 cls_models = list(MR.glob("best_classification_model_*.joblib"))
 if cls_models:
     model_path = cls_models[0]
@@ -41,17 +41,17 @@ if cls_models:
     except Exception:
         model = None
 
-    # Show feature importances / feature count if pipeline available
+    
     try:
         feat_names = []
         if model is not None and hasattr(model, "named_steps") and "preproc" in model.named_steps:
             preproc = model.named_steps["preproc"]
-            # numeric columns (if present)
+        
             try:
                 num_cols = preproc.transformers_[0][2]
             except Exception:
                 num_cols = []
-            # categorical original columns (we won't expand one-hot names here)
+        
             try:
                 cat_cols = preproc.transformers_[1][2] if len(preproc.transformers_) > 1 else []
             except Exception:
@@ -59,14 +59,14 @@ if cls_models:
             feat_names = list(num_cols) + list(cat_cols)
         report["classification_feature_count"] = len(feat_names)
     except Exception:
-        # safe fallback
+        
         report["classification_feature_count"] = None
 
-# Clustering summary
+
 clustered_path = OUT / "clustered_data.csv"
 if clustered_path.exists():
     clustered = pd.read_csv(clustered_path, low_memory=False)
-    # accept either 'cluster' or 'cluster_label'
+    
     cluster_col = None
     for possible in ("cluster", "cluster_label"):
         if possible in clustered.columns:
@@ -75,7 +75,7 @@ if clustered_path.exists():
     if cluster_col:
         counts = clustered[cluster_col].value_counts().to_dict()
         report["cluster_counts"] = counts
-        # Save a quick clusters scatter (sales vs profit)
+        
         if "sales" in clustered.columns and "profit" in clustered.columns:
             try:
                 plt.figure(figsize=(8,6))
@@ -85,15 +85,15 @@ if clustered_path.exists():
                 plt.savefig(MR / "clusters_sales_profit.png")
                 plt.clf()
             except Exception:
-                # if plotting fails for any reason, continue without crashing
+        
                 pass
 
-# Save report json and a human-readable summary
-# Use UTF-8 and ensure_ascii=False so unicode characters are preserved
+
+
 with open(MR / "summary_report.json", "w", encoding="utf-8") as f:
     json.dump(report, f, indent=2, ensure_ascii=False)
 
-# Minimal plain text report — write with utf-8 encoding to avoid UnicodeEncodeError on Windows
+
 with open(MR / "summary_report.txt", "w", encoding="utf-8") as f:
     f.write("Project summary\n")
     f.write("=================\n")

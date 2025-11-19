@@ -8,25 +8,25 @@ import seaborn as sns
 from pathlib import Path
 import matplotlib
 
-# Paths
+
 OUT = Path("../outputs")
 EDACHARTS = OUT / "eda_charts"
 EDACHARTS.mkdir(parents=True, exist_ok=True)
 
-# Load data
+
 df = pd.read_csv(OUT / "cleaned_data.csv", low_memory=False)
 
-# Normalize column names
+
 df.columns = [c.strip().lower().replace(" ", "_").replace(".", "_") for c in df.columns]
 
-# 1) Rename the Chinese column to 'record_count' everywhere
+
 if "记录数" in df.columns:
     df = df.rename(columns={"记录数": "record_count"})
 
-# Optional: set font to support Unicode (prevents warnings for other characters too)
-matplotlib.rcParams['font.family'] = 'Arial'  # or 'Segoe UI' on Windows
 
-# 1) Top categories by sales & profit
+matplotlib.rcParams['font.family'] = 'Arial'  
+
+
 if "category" in df.columns and "sales" in df.columns:
     cat_summary = df.groupby("category").agg(
         total_sales=("sales","sum"), total_profit=("profit","sum")
@@ -42,7 +42,7 @@ if "category" in df.columns and "sales" in df.columns:
     plt.savefig(EDACHARTS / "sales_by_category.png")
     plt.clf()
 
-# 2) Monthly sales trend
+
 if "order_date" in df.columns and "sales" in df.columns:
     df["order_date"] = pd.to_datetime(df["order_date"])
     monthly = df.set_index("order_date").resample("M").agg({"sales":"sum","profit":"sum"})
@@ -54,7 +54,6 @@ if "order_date" in df.columns and "sales" in df.columns:
     plt.savefig(EDACHARTS / "monthly_sales_trend.png")
     plt.clf()
 
-# 3) Distribution plots (sales, profit, profit_margin)
 numeric_cols = [c for c in ["sales","profit","profit_margin","record_count"] if c in df.columns]
 for c in numeric_cols:
     plt.figure(figsize=(6,4))
@@ -64,7 +63,7 @@ for c in numeric_cols:
     plt.savefig(EDACHARTS / f"dist_{c}.png")
     plt.clf()
 
-# 4) Correlation heatmap
+
 num_df = df.select_dtypes(include=["number"])
 if num_df.shape[1] >= 2:
     plt.figure(figsize=(8,6))
