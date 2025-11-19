@@ -36,7 +36,7 @@ num_features = [c for c in df.select_dtypes(include=[np.number]).columns if c no
 cat_features = [c for c in ["category","sub_category","segment","ship_mode","market","state"] if c in df.columns]
 
 # Keep a reasonable small set for faster runs
-num_features = [f for f in num_features if f in ("sales","profit","profit_margin","quantity","discount","shipping_cost","order_month","order_dayofweek")]
+num_features = [f for f in num_features if f in ("sales","quantity","discount","shipping_cost","order_month","order_dayofweek")]
 num_features = [f for f in num_features if f in df.columns]
 cat_features = [f for f in cat_features if f in df.columns]
 
